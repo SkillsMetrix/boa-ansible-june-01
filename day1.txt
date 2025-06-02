@@ -1,22 +1,21 @@
-# CLASS
-class Employee():
-    uname=''
-    email=''
-    income=''
 
-    # constructor to initialize the object
-    def __init__(self,uname,email,income):
-        self.uname=uname
-        self.email=email
-        self.income=income
-
-    def printDetails(self):
-        print(f"{self.uname} , {self.email} , {self.income}")
-
-# Object
-Manohar=Employee('Manohar CH','manohar@mail.com','123456')
-Manohar.printDetails()
+class RBI():
+    def depositAmount(self):
+        pass
+    def withdrawAmount(self):
+        pass
+    def checkBalance(self):
+        pass
 
 
+class SBI(RBI):
+    initialBalance=100
+    def depositAmount(self,amount):
+        self.initialBalance +=amount
+        print (f"{amount} is deposited in SBI Bank")
+    def checkBalance(self):
+        print (f"SBI is showing Balance in Bank {self.initialBalance}")
 
-        
+sbi= SBI()
+sbi.depositAmount(1200)
+sbi.checkBalance()

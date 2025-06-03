@@ -12,9 +12,12 @@ usersData=[]
 def searchUser(id):
     for index,data in enumerate(usersData):
         if(data['id'] == id):
+            return data
+
+def searchUserForindex(id):
+    for index,data in enumerate(usersData):
+        if(data['id'] == id):
             return index
-
-
 # find the user
 @app.get('/finduser/{id}')
 def findUserById(id:int):
@@ -26,11 +29,26 @@ def findUserById(id:int):
 # delete the User
 @app.delete('/deleteuser/{id}')
 def deleteUserById(id:int):
-    findData= searchUser(id)
+    findData= searchUserForindex(id)
     if findData == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
     usersData.pop(findData)
     return {'message': 'User Found and deleted'}
+
+#update user
+@app.put('/updateuser/{id}')
+def updateUserById(id:int,payload:schema.User):
+    findData= searchUserForindex(id)
+
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
+    udata=payload.model_dump()
+    udata['id']= id
+    usersData[findData]= udata
+    
+    return {'message': 'User Found and updated'}
+
+
 
 # load the userdata array
 @app.get('/loaddata')
@@ -45,9 +63,3 @@ def addUser(payload:schema.User):
     usersData.append(data)
     return {'message': data}
     
-
-
-
-
-
-

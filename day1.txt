@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI,status,HTTPException
 from . import schema
 from random import randrange
 
@@ -12,15 +12,25 @@ usersData=[]
 def searchUser(id):
     for index,data in enumerate(usersData):
         if(data['id'] == id):
-            return data
+            return index
 
 
 # find the user
 @app.get('/finduser/{id}')
 def findUserById(id:int):
     findData= searchUser(id)
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
     return {'message': findData}
 
+# delete the User
+@app.delete('/deleteuser/{id}')
+def deleteUserById(id:int):
+    findData= searchUser(id)
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
+    usersData.pop(findData)
+    return {'message': 'User Found and deleted'}
 
 # load the userdata array
 @app.get('/loaddata')

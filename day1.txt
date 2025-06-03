@@ -1,107 +1,22 @@
 
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import sessionmaker
 
------- DML-------
+SQL_DB = "sqlite:///./mytest.db"
 
-from fastapi import status,HTTPException,APIRouter
-from . import schema
-from random import randrange
+engine = create_engine(
+    SQL_DB, connect_args={"check_same_thread": False}
 
-router= APIRouter(tags=[" User Insert ,Update, Delete"])
+)
+SessioLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-usersData=[]
-
-# common function for searching
-def searchUserForindex(id):
-    for index,data in enumerate(usersData):
-        if(data['id'] == id):
-            return index
-        
-# add data to array
-@router.post('/adduser')
-def addUser(payload:schema.User):
-    data= payload.model_dump()
-    data['id']=randrange(1,1000)
-    usersData.append(data)
-    return {'message': data}
+Base = declarative_base()
 
 
-# delete the User
-@router.delete('/deleteuser/{id}')
-def deleteUserById(id:int):
-    findData= searchUserForindex(id)
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    usersData.pop(findData)
-    return {'message': 'User Found and deleted'}
-
-#update user
-@router.put('/updateuser/{id}')
-def updateUserById(id:int,payload:schema.User):
-    findData= searchUserForindex(id)
-
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    udata=payload.model_dump()
-    udata['id']= id
-    usersData[findData]= udata
-    
-    return {'message': 'User Found and updated'}
-
-
----------
-
-
-
------- Load Users-----
-
-
-from fastapi import status,HTTPException,APIRouter
-
-
-
-router= APIRouter(tags=[" User Load Features"])
-usersData=[]
-# common function for searching
-def searchUser(id):
-    for index,data in enumerate(usersData):
-        if(data['id'] == id):
-            return data
-# find the user
-@router.get('/finduser/{id}')
-def findUserById(id:int):
-    findData= searchUser(id)
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    return {'message': findData}
-
-# load the userdata array
-@router.get('/loaddata')
-def loadUsers():
-    return {'users': usersData}
-
-
-
-
-
-
-
-
-------
-
-
-from fastapi import FastAPI
-from . import DMLUsers,loadUsers
-
-app= FastAPI()
-
-app.include_router(DMLUsers.router)
-app.include_router(loadUsers.router)
-
-
-    
-
-
-
-
-
-
+def get_connection():
+    db = SessioLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -1,22 +1,57 @@
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import sessionmaker
+from fastapi import status,HTTPException,APIRouter,Depends
+from . import schema,models
+from sqlalchemy.orm import Session
 
-SQL_DB = "sqlite:///./mytest.db"
+from .database import get_connection,engine
 
-engine = create_engine(
-    SQL_DB, connect_args={"check_same_thread": False}
+router= APIRouter(tags=[" User Insert ,Update, Delete"])
 
-)
-SessioLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+usersData=[]
 
-Base = declarative_base()
+# common function for searching
+def searchUserForindex(id):
+    for index,data in enumerate(usersData):
+        if(data['id'] == id):
+            return index
+        
+# add data to array
+@router.post('/adduser')
+def addUser(payload:schema.User,db:Session=Depends(get_connection)):
+    postdata= models.UserApp(**payload.model_dump())
+    db.add(postdata)
+    db.commit()
+    return {'message': postdata}
 
 
-def get_connection():
-    db = SessioLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# delete the User
+@router.delete('/deleteuser/{id}')
+def deleteUserById(id:int):
+    findData= searchUserForindex(id)
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
+    usersData.pop(findData)
+    return {'message': 'User Found and deleted'}
+
+#update user
+@router.put('/updateuser/{id}')
+def updateUserById(id:int,payload:schema.User):
+    findData= searchUserForindex(id)
+
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
+    udata=payload.model_dump()
+    udata['id']= id
+    usersData[findData]= udata
+    
+    return {'message': 'User Found and updated'}
+
+
+
+    
+
+
+
+
+
+

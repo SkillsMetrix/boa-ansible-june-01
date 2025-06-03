@@ -1,8 +1,28 @@
 
 from fastapi import FastAPI
+from . import schema
+from random import randrange
 
 app= FastAPI()
 
-@app.get('/welcome')
-def showWelcome():
-    return {'message','Welcome to FastAPI'}
+usersData=[]
+
+# load the userdata array
+@app.get('/loaddata')
+def loadUsers():
+    return {'users': usersData}
+
+# add data to array
+@app.post('/adduser')
+def addUser(payload:schema.User):
+    data= payload.model_dump()
+    data['id']=randrange(1,1000)
+    usersData.append(data)
+    return {'message': data}
+    
+
+
+
+
+
+

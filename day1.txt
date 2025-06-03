@@ -1,33 +1,32 @@
 
-from fastapi import FastAPI,status,HTTPException
+
+------ DML-------
+
+from fastapi import status,HTTPException,APIRouter
 from . import schema
 from random import randrange
 
-app= FastAPI()
+router= APIRouter(tags=[" User Insert ,Update, Delete"])
 
 usersData=[]
 
 # common function for searching
-
-def searchUser(id):
-    for index,data in enumerate(usersData):
-        if(data['id'] == id):
-            return data
-
 def searchUserForindex(id):
     for index,data in enumerate(usersData):
         if(data['id'] == id):
             return index
-# find the user
-@app.get('/finduser/{id}')
-def findUserById(id:int):
-    findData= searchUser(id)
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    return {'message': findData}
+        
+# add data to array
+@router.post('/adduser')
+def addUser(payload:schema.User):
+    data= payload.model_dump()
+    data['id']=randrange(1,1000)
+    usersData.append(data)
+    return {'message': data}
+
 
 # delete the User
-@app.delete('/deleteuser/{id}')
+@router.delete('/deleteuser/{id}')
 def deleteUserById(id:int):
     findData= searchUserForindex(id)
     if findData == None:
@@ -36,7 +35,7 @@ def deleteUserById(id:int):
     return {'message': 'User Found and deleted'}
 
 #update user
-@app.put('/updateuser/{id}')
+@router.put('/updateuser/{id}')
 def updateUserById(id:int,payload:schema.User):
     findData= searchUserForindex(id)
 
@@ -49,17 +48,60 @@ def updateUserById(id:int,payload:schema.User):
     return {'message': 'User Found and updated'}
 
 
+---------
+
+
+
+------ Load Users-----
+
+
+from fastapi import status,HTTPException,APIRouter
+
+
+
+router= APIRouter(tags=[" User Load Features"])
+usersData=[]
+# common function for searching
+def searchUser(id):
+    for index,data in enumerate(usersData):
+        if(data['id'] == id):
+            return data
+# find the user
+@router.get('/finduser/{id}')
+def findUserById(id:int):
+    findData= searchUser(id)
+    if findData == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
+    return {'message': findData}
 
 # load the userdata array
-@app.get('/loaddata')
+@router.get('/loaddata')
 def loadUsers():
     return {'users': usersData}
 
-# add data to array
-@app.post('/adduser')
-def addUser(payload:schema.User):
-    data= payload.model_dump()
-    data['id']=randrange(1,1000)
-    usersData.append(data)
-    return {'message': data}
+
+
+
+
+
+
+
+------
+
+
+from fastapi import FastAPI
+from . import DMLUsers,loadUsers
+
+app= FastAPI()
+
+app.include_router(DMLUsers.router)
+app.include_router(loadUsers.router)
+
+
     
+
+
+
+
+
+

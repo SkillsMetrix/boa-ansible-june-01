@@ -2,66 +2,26 @@
 from fastapi import status,HTTPException,APIRouter,Depends
 from . import schema,models
 from sqlalchemy.orm import Session
-
 from .database import get_connection,engine
+router= APIRouter(tags=[" User Load Features"])
 
-router= APIRouter(tags=[" User Insert ,Update, Delete"])
-
-usersData=[]
-
-# common function for searching
-def searchUserForindex(id):
-    for index,data in enumerate(usersData):
-        if(data['id'] == id):
-            return index
-        
-# add data to array
-@router.post('/adduser')
-def addUser(payload:schema.User,db:Session=Depends(get_connection)):
-    postdata= models.UserApp(**payload.model_dump())
-    db.add(postdata)
-    db.commit()
-    return {'message': postdata}
-
-
-# delete the User
-@router.delete('/deleteuser/{id}')
-def deleteUserById(id:int):
-    findData= searchUserForindex(id)
+# find the user
+@router.get('/finduser/{name}')
+def findUserById(name:str,db:Session=Depends(get_connection)):
+    findData= db.query(models.UserApp).filter(models.UserApp.uname == name).first()
     if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    usersData.pop(findData)
-    return {'message': 'User Found and deleted'}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user Name not Found")
+    return {'message': findData}
 
-#update user
-@router.put('/updateuser/{id}')
-def updateUserById(id:int,payload:schema.User):
-    findData= searchUserForindex(id)
-
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user ID not Found")
-    udata=payload.model_dump()
-    udata['id']= id
-    usersData[findData]= udata
-    
-    return {'message': 'User Found and updated'}
+# load the userdata array
+@router.get('/loaddata')
+def loadUsers(db:Session=Depends(get_connection)):
+    users= db.query(models.UserApp).all()
+    return {'users': users}
 
 
 
-    
 
-
-----
-
-from sqlalchemy import Column,String
-from .database import Base
-
-class UserApp(Base):
-    __tablename__='USERAPP'
-
-    uname=Column(String,primary_key=True)
-    email=Column(String)
-    city=Column(String)
 
 
 

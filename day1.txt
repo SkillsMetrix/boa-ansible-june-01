@@ -7,6 +7,21 @@ app= FastAPI()
 
 usersData=[]
 
+# common function for searching
+
+def searchUser(id):
+    for index,data in enumerate(usersData):
+        if(data['id'] == id):
+            return data
+
+
+# find the user
+@app.get('/finduser/{id}')
+def findUserById(id:int):
+    findData= searchUser(id)
+    return {'message': findData}
+
+
 # load the userdata array
 @app.get('/loaddata')
 def loadUsers():

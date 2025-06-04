@@ -1,28 +1,24 @@
 
-from fastapi import status,HTTPException,APIRouter,Depends
-from . import schema,models
-from sqlalchemy.orm import Session
-from .database import get_connection,engine
-router= APIRouter(tags=[" User Load Features"])
-
-# find the user
-@router.get('/finduser/{name}')
-def findUserById(name:str,db:Session=Depends(get_connection)):
-    findData= db.query(models.UserApp).filter(models.UserApp.uname == name).first()
-    if findData == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="OOPS !! Given user Name not Found")
-    return {'message': findData}
-
-# load the userdata array
-@router.get('/loaddata')
-def loadUsers(db:Session=Depends(get_connection)):
-    users= db.query(models.UserApp).all()
-    return {'users': users}
+- name: check the background
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+- name: Gather OS Information
+  setup:
+    gather_subset:
+      - "os_family"
+- name: print OS Information
+  debug:
+    msg: "The underlying OS is : {{ansible_os_family}}"
 
 
 
 
+-----
 
+- hosts: web
+  become: true
 
-
-
+  pre_tasks:
+    - name: load the background check
+      import_tasks: pretask.yaml

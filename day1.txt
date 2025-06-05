@@ -1,33 +1,21 @@
-- name: update cache and install nginx
+- name: uninstall apache from remote
   apt:
-    name: nginx
-    state: latest
-    update_cache: yes
-- name: copy index to destination
-  template: src=index.html dest=/usr/share/nginx/html/index.html
-- name: copy update to destination
-  template: src=update.html dest=/usr/share/nginx/html/index.html
-  notify:
-    - restart nginx
+    name: apache2
+    state: absent
+  when: install_apache_flag
 
+- name: check OS value
+  debug:
+    var: ansible_facts['kernel_version']
+  when:
+    - ansible_facts['os_family'] =='Debian'
+    - ansible_facts['distribution_major_version'] >="20"
 
+- name: read the file and take a call
+  command: cat /home/ubuntu/userdetails.txt
+  register: data
 
------
-
-
-
-- name: restart nginx
-  service:
-    name: nginx
-    state: started
-
-
-------
-
-
-- name: use new ansible galaxy
-  hosts: db
-  become: true
-  gather_facts: false
-  roles:
-    - handler-demo
+- name: print the data if user found
+  debug:
+    var: data.stdout
+  when: data.stdout.find('superuser') != -1

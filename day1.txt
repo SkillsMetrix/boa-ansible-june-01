@@ -1,50 +1,12 @@
 
-- name: vardemo
-  hosts: web
-  gather_facts: false
-  become: true
+- name: copy source file to destination
+  template: src=welcome.html dest=/home/ubuntu
+  register: copy_result
+  ignore_errors: true
 
-  vars:
-    username_firstname: 'amit kumar'
-    is_enabled: true
-
-    fruits:
-      - apple
-      - banana
-      - oranges
-    fruits_basket:
-      - name: john
-        fruits:
-          - apple
-          - oranges
-      - name: same
-        fruits:
-          - banana
-          - oranges
-  vars_files:
-    - my-vars.yaml
-
-  tasks:
-    - name: print string value
-      debug:
-        var: username_firstname
-    - name: print boolean value
-      debug:
-        var: is_enabled
-    - name: print list value
-      debug:
-        var: fruits
-
-    - name: print position value
-      debug:
-        var: fruits[0]
-    
-    - name: print nested value
-      debug:
-        var: fruits_basket
-    - name: print external value
-      debug:
-        var: username
-    - name: print external value
-      debug:
-        var: project
+- name: print error
+  debug:
+    var: copy_result
+- name: copy source file to destination
+  template: src=update.html dest=/home/ubuntu
+  

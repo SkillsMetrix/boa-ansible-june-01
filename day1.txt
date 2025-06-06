@@ -1,21 +1,50 @@
-- name: uninstall apache from remote
-  apt:
-    name: apache2
-    state: absent
-  when: install_apache_flag
 
-- name: check OS value
-  debug:
-    var: ansible_facts['kernel_version']
-  when:
-    - ansible_facts['os_family'] =='Debian'
-    - ansible_facts['distribution_major_version'] >="20"
+- name: vardemo
+  hosts: web
+  gather_facts: false
+  become: true
 
-- name: read the file and take a call
-  command: cat /home/ubuntu/userdetails.txt
-  register: data
+  vars:
+    username_firstname: 'amit kumar'
+    is_enabled: true
 
-- name: print the data if user found
-  debug:
-    var: data.stdout
-  when: data.stdout.find('superuser') != -1
+    fruits:
+      - apple
+      - banana
+      - oranges
+    fruits_basket:
+      - name: john
+        fruits:
+          - apple
+          - oranges
+      - name: same
+        fruits:
+          - banana
+          - oranges
+  vars_files:
+    - my-vars.yaml
+
+  tasks:
+    - name: print string value
+      debug:
+        var: username_firstname
+    - name: print boolean value
+      debug:
+        var: is_enabled
+    - name: print list value
+      debug:
+        var: fruits
+
+    - name: print position value
+      debug:
+        var: fruits[0]
+    
+    - name: print nested value
+      debug:
+        var: fruits_basket
+    - name: print external value
+      debug:
+        var: username
+    - name: print external value
+      debug:
+        var: project

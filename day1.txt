@@ -1,12 +1,23 @@
-
-- name: copy source file to destination
-  template: src=welcome.html dest=/home/ubuntu
-  register: copy_result
-  ignore_errors: true
-
-- name: print error
+- name: check the background
   debug:
-    var: copy_result
-- name: copy source file to destination
-  template: src=update.html dest=/home/ubuntu
-  
+    msg: "OS: {{ansible_os_family}}, RAM : {{ansible_memtotal_mb}} :MB"
+- name: install packages on Debian/Ubuntu if RAM > 512
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop: "{{debian_packages}}"
+  when:
+    - ansible_os_family == "Debian"
+    - ansible_memtotal_mb >= min_required_ram_mb
+
+- name: install packages on RHEL/Centos if RAM > 512
+  yum:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop: "{{redhat_packages}}"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_memtotal_mb >= min_required_ram_mb
+    

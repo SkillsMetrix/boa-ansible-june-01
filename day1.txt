@@ -21,3 +21,31 @@
     - ansible_os_family == "RedHat"
     - ansible_memtotal_mb >= min_required_ram_mb
     
+
+
+
+----
+
+- import_tasks: subtask.yaml
+
+- name: uninstall apache from remote
+  apt:
+    name: apache2
+    state: absent
+  when: install_apache_flag
+
+- name: check OS value
+  debug:
+    var: ansible_facts['kernel_version']
+  when:
+    - ansible_facts['os_family'] =='Debian'
+    - ansible_facts['distribution_major_version'] >="20"
+
+- name: read the file and take a call
+  command: cat /home/ubuntu/userdetails.txt
+  register: data
+
+- name: print the data if user found
+  debug:
+    var: data.stdout
+  when: data.stdout.find('superuser') != -1
